@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sound to Electricity Conversion Simulator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #2d3d8a;
+      margin-bottom: 10px;
+    }
+    .simulation-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .controls {
+      flex: 1;
+      min-width: 300px;
+      padding: 20px;
+      background-color: #f0f7ff;
+      border-radius: 8px;
+    }
+    .visualization {
+      flex: 2;
+      min-width: 400px;
+      height: 500px;
+      position: relative;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #fafafa;
+    }
+    .control-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #2d3d8a;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    .value-display {
+      font-size: 14px;
+      color: #555;
+    }
+    button {
+      background-color: #2d3d8a;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #1a2559;
+    }
+    .output-metrics {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #eefaff;
+      border-radius: 8px;
+    }
+    .sound-wave {
+      position: absolute;
+      top: 50%;
+      height: 2px;
+      background-color: #2d3d8a;
+      width: 100%;
+      transform-origin: left center;
+    }
+    .piezo-disk {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background-color: #aab7c4;
+      border: 2px solid #7a8a9c;
+      top: 50%;
+      left: 70%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .piezo-vibration {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(170,183,196,1) 0%, rgba(122,138,156,1) 100%);
+    }
+    .led {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ccc;
+      right: 60px;
+      top: 50%;
+      transform: translateY(-50%);
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    .led-glow {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: #ff0;
+      opacity: 0;
+      box-shadow: 0 0 10px rgba(255,255,0,0.8);
+    }
+    .capacitor {
+      position: absolute;
+      width: 40px;
+      height: 80px;
+      background-color: #666;
+      right: 150px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 5px;
+    }
+    .capacitor-level {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background-color: #4287f5;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+      transition: height 0.3s;
+    }
+    .speaker {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #555, #333);
+      left: 120px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .speaker-cone {
+      width: 80%;
+      height: 80%;
+      border-radius: 50%;
+      background: radial-gradient(circle, #777, #444);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .speaker-center {
+      width: 30%;
+      height: 30%;
+      border-radius: 50%;
+      background-color: #222;
+    }
+    .wire {
+      position: absolute;
+      height: 2px;
+      background-color: #222;
+      top: 50%;
+    }
+    .wire-1 {
+      left: 170px;
+      width: 130px;
+    }
+    .wire-2 {
+      left: 373px;
+      width: 80px;
+    }
+    .wire-3 {
+      left: 533px;
+      width: 60px;
+    }
+    .metrics-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .metrics-value {
+      font-size: 18px;
+      color: #2d3d8a;
+      margin-bottom: 15px;
+    }
+    .equation-box {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f7f7f7;
+      border-radius: 8px;
+      border-left: 4px solid #2d3d8a;
+    }
+    .equation {
+      font-family: 'Times New Roman', Times, serif;
+      font-style: italic;
+      padding: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sound to Electricity Conversion Simulator</h1>
+      <p>Experiment with converting sound energy to electrical energy using piezoelectric materials</p>
+    </header>
+
+    <div class="simulation-container">
+      <div class="controls">
+        <div class="control-group">
+          <label for="frequency">Sound Frequency (Hz)</label>
+          <input type="range" id="frequency" min="20" max="2000" value="440" step="1">
+          <div class="value-display">Current value: <span id="frequency-value">440 Hz</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="amplitude">Sound Amplitude (dB)</label>
+          <input type="range" id="amplitude" min="30" max="120" value="70" step="1">
+          <div class="value-display">Current value: <span id="amplitude-value">70 dB</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="piezo-thickness">Piezoelectric Disk Thickness (mm)</label>
+          <input type="range" id="piezo-thickness" min="0.1" max="5" value="1" step="0.1">
+          <div class="value-display">Current value: <span id="piezo-thickness-value">1.0 mm</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="piezo-diameter">Piezoelectric Disk Diameter (cm)</label>
+          <input type="range" id="piezo-diameter" min="1" max="15" value="5" step="0.5">
+          <div class="value-display">Current value: <span id="piezo-diameter-value">5.0 cm</span></div>
+        </div>
+
+        <div class="control-group">
+          <label for="piezo-material">Piezoelectric Material</label>
+          <select id="piezo-material" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+            <option value="pzt">PZT (Lead Zirconate Titanate)</option>
+            <option value="barium">Barium Titanate</option>
+            <option value="pvdf">PVDF (Polyvinylidene Fluoride)</option>
+          </select>
+          <div class="value-display">Piezoelectric constant: <span id="piezo-constant-value">500 pC/N</span></div>
+        </div>
+
+        <button id="run-simulation">Run Simulation</button>
+
+        <div class="output-metrics">
+          <div class="metrics-title">Generated Voltage:</div>
+          <div class="metrics-value" id="voltage-output">0.00 mV</div>
+          
+          <div class="metrics-title">Generated Power:</div>
+          <div class="metrics-value" id="power-output">0.00 μW</div>
+          
+          <div class="metrics-title">Energy Conversion Efficiency:</div>
+          <div class="metrics-value" id="efficiency-output">0.00%</div>
+        </div>
+
+        <div class="equation-box">
+          <div class="metrics-title">Key Equations:</div>
+          <div class="equation">V = g33 × T × d</div>
+          <div class="equation">P = V² / R</div>
+          <div class="equation">η = Pelectric / Psound × 100%</div>
+          <p style="font-size: 12px; color: #666; margin-top: 10px;">
+            Where:<br>
+            V = Generated voltage<br>
+            g33 = Piezoelectric voltage constant<br>
+            T = Applied stress<br>
+            d = Thickness<br>
+            P = Power<br>
+            R = Load resistance<br>
+            η = Efficiency
+          </p>
+        </div>
+      </div>
+
+      <div class="visualization" id="visualization">
+        <div class="speaker">
+          <div class="speaker-cone">
+            <div class="speaker-center"></div>
+          </div>
+        </div>
+        
+        <div class="wire wire-1"></div>
+        
+        <div class="piezo-disk">
+          <div class="piezo-vibration" id="piezo-disk"></div>
+        </div>
+        
+        <div class="wire wire-2"></div>
+        
+        <div class="capacitor">
+          <div class="capacitor-level" id="capacitor-level" style="height: 0%;"></div>
+        </div>
+        
+        <div class="wire wire-3"></div>
+        
+        <div class="led">
+          <div class="led-glow" id="led-glow"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // DOM Elements
+    const frequencySlider = document.getElementById('frequency');
+    const frequencyValue = document.getElementById('frequency-value');
+    const amplitudeSlider = document.getElementById('amplitude');
+    const amplitudeValue = document.getElementById('amplitude-value');
+    const piezoThicknessSlider = document.getElementById('piezo-thickness');
+    const piezoThicknessValue = document.getElementById('piezo-thickness-value');
+    const piezoDiameterSlider = document.getElementById('piezo-diameter');
+    const piezoDiameterValue = document.getElementById('piezo-diameter-value');
+    const piezoMaterialSelect = document.getElementById('piezo-material');
+    const piezoConstantValue = document.getElementById('piezo-constant-value');
+    const runButton = document.getElementById('run-simulation');
+    const voltageOutput = document.getElementById('voltage-output');
+    const powerOutput = document.getElementById('power-output');
+    const efficiencyOutput = document.getElementById('efficiency-output');
+    const piezoDisk = document.getElementById('piezo-disk');
+    const capacitorLevel = document.getElementById('capacitor-level');
+    const ledGlow = document.getElementById('led-glow');
+    
+    // Material constants
+    const materialConstants = {
+      pzt: { name: "PZT", constant: 500, color: "#aab7c4" },
+      barium: { name: "Barium Titanate", constant: 300, color: "#d4e3e0" },
+      pvdf: { name: "PVDF", constant: 150, color: "#d6d0e0" }
+    };
+    
+    // Update display values
+    frequencySlider.addEventListener('input', () => {
+      frequencyValue.textContent = `${frequencySlider.value} Hz`;
+    });
+    
+    amplitudeSlider.addEventListener('input', () => {
+      amplitudeValue.textContent = `${amplitudeSlider.value} dB`;
+    });
+    
+    piezoThicknessSlider.addEventListener('input', () => {
+      piezoThicknessValue.textContent = `${parseFloat(piezoThicknessSlider.value).toFixed(1)} mm`;
+    });
+    
+    piezoDiameterSlider.addEventListener('input', () => {
+      piezoDiameterValue.textContent = `${parseFloat(piezoDiameterSlider.value).toFixed(1)} cm`;
+    });
+    
+    piezoMaterialSelect.addEventListener('change', () => {
+      const material = materialConstants[piezoMaterialSelect.value];
+      piezoConstantValue.textContent = `${material.constant} pC/N`;
+      piezoDisk.style.background = `radial-gradient(circle, ${material.color} 0%, rgba(122,138,156,1) 100%)`;
+    });
+    
+    // Animation variables
+    let animationId;
+    let isSimulationRunning = false;
+    
+    // Sound wave animation
+    function createSoundWave(frequency, amplitude) {
+      // Remove existing sound waves
+      document.querySelectorAll('.sound-wave').forEach(wave => wave.remove());
+      
+      const normalizedAmplitude = (amplitude - 30) / 90; // Convert from dB range to 0-1
+      const waveHeight = normalizedAmplitude * 30; // Maximum 30px height
+      
+      // Create new wave
+      const wave = document.createElement('div');
+      wave.classList.add('sound-wave');
+      document.getElementById('visualization').appendChild(wave);
+      
+      // Animation function
+      let time = 0;
+      
+      function animateWave() {
+        time += 0.05;
+        
+        // Calculate wave path
+        let path = '';
+        for (let x = 0; x < 600; x += 5) {
+          const y = Math.sin(x / 30 * frequency / 200 + time) * waveHeight;
+          // Apply exponential decay to simulate sound attenuation
+          const decay = Math.exp(-x / 300);
+          const adjustedY = y * decay;
+          
+          if (x === 0) {
+            path += `M${x},${adjustedY} `;
+          } else {
+            path += `L${x},${adjustedY} `;
+          }
+        }
+        
+        // Apply the path to the wave element
+        wave.style.transform = `translate(0, 0) scaleY(${Math.abs(Math.sin(time * frequency / 100))})`;
+        
+        // Animate piezo disk
+        const piezoScaleY = 1 + Math.sin(time * frequency / 100) * normalizedAmplitude * 0.05;
+        const piezoScaleX = 1 - Math.sin(time * frequency / 100) * normalizedAmplitude * 0.05;
+        piezoDisk.style.transform = `scale(${piezoScaleX}, ${piezoScaleY})`;
+        
+        animationId = requestAnimationFrame(animateWave);
+      }
+      
+      animateWave();
+    }
+    
+    // Run simulation
+    runButton.addEventListener('click', () => {
+      if (isSimulationRunning) {
+        cancelAnimationFrame(animationId);
+        runButton.textContent = 'Run Simulation';
+        isSimulationRunning = false;
+        return;
+      }
+      
+      // Start simulation
+      runButton.textContent = 'Stop Simulation';
+      isSimulationRunning = true;
+      
+      // Get values
+      const frequency = parseInt(frequencySlider.value);
+      const amplitude = parseInt(amplitudeSlider.value);
+      const piezoThickness = parseFloat(piezoThicknessSlider.value);
+      const piezoDiameter = parseFloat(piezoDiameterSlider.value);
+      const piezoMaterial = piezoMaterialSelect.value;
+      
+      // Calculate output based on scientific principles
+      // These calculations are simplified models for the simulation
+      
+      // Sound pressure level (SPL) to Pascal conversion
+      // 0 dB SPL = 20 μPa (reference)
+      // Formula: p = p0 * 10^(SPL/20)
+      const p0 = 20e-6; // reference pressure in Pascal
+      const soundPressure = p0 * Math.pow(10, amplitude / 20);
+      
+      // Calculate force on piezo disk
+      const area = Math.PI * Math.pow(piezoDiameter / 200, 2); // diameter in m
+      const force = soundPressure * area;
+      
+      // Calculate strain
+      const youngModulus = 6e10; // Young's modulus for typical piezo materials (Pa)
+      const stress = force / area;
+      const strain = stress / youngModulus;
+      
+      // Calculate voltage generated
+      // V = g33 * T * d
+      // g33 is the piezoelectric voltage constant
+      // T is the applied stress
+      // d is the thickness
+      const g33 = materialConstants[piezoMaterial].constant * 1e-3; // convert to V·m/N
+      const voltage = g33 * stress * (piezoThickness / 1000); // thickness in m
+      
+      // Calculate power (simplified model)
+      const resistance = 10000; // load resistance in ohms
+      const power = Math.pow(voltage, 2) / resistance;
+      
+      // Calculate sound power
+      const soundPower = (Math.pow(soundPressure, 2) * area) / (1.2 * 343); // ρ*c = 1.2*343 for air
+      
+      // Calculate efficiency
+      const efficiency = (power / soundPower) * 100;
+      
+      // Resonance factor (simplified)
+      // Piezoelectric materials have resonant frequencies
+      const piezoResonanceFreq = 1000 / piezoThickness; // Simplified model
+      const resonanceFactor = 1 + 5 * Math.exp(-Math.pow((frequency - piezoResonanceFreq) / 200, 2));
+      
+      // Apply resonance factor
+      const adjustedVoltage = voltage * resonanceFactor;
+      const adjustedPower = power * resonanceFactor;
+      const adjustedEfficiency = efficiency * resonanceFactor;
+      
+      // Update display values with scientific notations
+      if (adjustedVoltage < 1) {
+        voltageOutput.textContent = `${(adjustedVoltage * 1000).toFixed(2)} mV`;
+      } else {
+        voltageOutput.textContent = `${adjustedVoltage.toFixed(2)} V`;
+      }
+      
+      if (adjustedPower < 1e-6) {
+        powerOutput.textContent = `${(adjustedPower * 1e9).toFixed(2)} nW`;
+      } else if (adjustedPower < 1e-3) {
+        powerOutput.textContent = `${(adjustedPower * 1e6).toFixed(2)} μW`;
+      } else if (adjustedPower < 1) {
+        powerOutput.textContent = `${(adjustedPower * 1e3).toFixed(2)} mW`;
+      } else {
+        powerOutput.textContent = `${adjustedPower.toFixed(2)} W`;
+      }
+      
+      efficiencyOutput.textContent = `${adjustedEfficiency.toFixed(4)}%`;
+      
+      // Update visualization
+      createSoundWave(frequency, amplitude);
+      
+      // Animate capacitor filling
+      const capacitorHeight = Math.min(100, adjustedVoltage * 100);
+      capacitorLevel.style.height = `${capacitorHeight}%`;
+      
+      // Animate LED based on voltage
+      const ledBrightness = Math.min(1, adjustedVoltage / 3);
+      ledGlow.style.opacity = ledBrightness;
+      ledGlow.style.boxShadow = `0 0 ${10 + ledBrightness * 10}px rgba(255,255,0,${0.5 * ledBrightness})`;
+      if (ledBrightness > 0.1) {
+        ledGlow.style.backgroundColor = `rgb(255, ${Math.floor(255 - ledBrightness * 50)}, 0)`;
+      } else {
+        ledGlow.style.backgroundColor = '#ff0';
+      }
+    });
+    
+    // Initialize material display
+    piezoMaterialSelect.dispatchEvent(new Event('change'));
+  </script>
+</body>
+</html>
